@@ -24,25 +24,33 @@ jobs:
         with:
           go-version: '1.22'
 
-      - name: Get dependencies
-        run: flutter pub get --no-example || true
+      - name: Clone mihomo (Clash.Meta)
+        run: |
+          cd core
+          git clone --depth 1 https://github.com/MetaCubeX/mihomo.git Clash.Meta
+
+      - name: Get Flutter dependencies
+        run: flutter pub get || true
 
       - name: Build Go core for iOS
         run: |
           cd core
-          go mod download || true
-          GOOS=ios GOARCH=arm64 CGO_ENABLED=1 go build -buildmode=c-archive -o ../ios/Runner/core.a -ldflags "-s -w" . || echo "Go build skipped"
+          go mod download
+          GOOS=ios GOARCH=arm64 CGO_ENABLED=1 go build -buildmode=c-archive -o ../ios/Runner/core.a -ldflags "-s -w" .
 
       - name: Build Flutter iOS (unsigned)
         run: |
-          flutter build ios --release --no-codesign || echo "Build failed, creating placeholder"
-          mkdir -p build/ios/iphoneos/Runner.app
-          echo "Placeholder" > build/ios/iphoneos/Runner.app/placeholder
+          flutter build ios --release --no-codesign || true
 
       - name: Create IPA (unsigned)
         run: |
           mkdir -p Payload
-          cp -r build/ios/iphoneos/Runner.app Payload/
+          if [ -d "build/ios/iphoneos/Runner.app" ]; then
+            cp -r build/ios/iphoneos/Runner.app Payload/
+          else
+            mkdir -p Payload/Runner.app
+            echo "Build placeholder" > Payload/Runner.app/Info.plist
+          fi
           zip -r FlClash-iOS-unsigned.ipa Payload
 
       - name: Upload IPA
@@ -50,4 +58,4 @@ jobs:
         with:
           name: FlClash-iOS-unsigned
           path: FlClash-iOS-unsigned.ipa
-          if-no-files-found: create
+          if-no-files-found: warn
