@@ -167,8 +167,8 @@ class _HomePageViewState extends ConsumerState<_HomePageView> {
     if (isAnimateToPage && isMobile && !ignoreAnimateTo) {
       await _pageController.animateToPage(
         index,
-        duration: kTabScrollDuration,
-        curve: Curves.easeOut,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOutCubic,
       );
     } else {
       _pageController.jumpToPage(index);
