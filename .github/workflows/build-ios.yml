@@ -28,7 +28,6 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.32.0'
 
       - name: Setup Xcode 26
         run: |
