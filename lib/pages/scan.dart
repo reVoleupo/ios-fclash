@@ -16,22 +16,40 @@ class ScanPage extends StatefulWidget {
 }
 
 class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
-  MobileScannerController controller = MobileScannerController(
-    detectionSpeed: DetectionSpeed.noDuplicates,
-    formats: const [BarcodeFormat.qrCode],
-  );
-
+  MobileScannerController? controller;
   StreamSubscription<Object?>? _subscription;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _subscription = controller.barcodes.listen(_handleBarcode);
-    unawaited(controller.start());
+    _initScanner();
+  }
+
+  Future<void> _initScanner() async {
+    try {
+      controller = MobileScannerController(
+        detectionSpeed: DetectionSpeed.noDuplicates,
+        formats: const [BarcodeFormat.qrCode],
+      );
+      _subscription = controller?.barcodes.listen(_handleBarcode);
+      await controller?.start();
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('Failed to initialize scanner: $e');
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    }
   }
 
   void _handleBarcode(BarcodeCapture barcodeCapture) {
+    if (!mounted || barcodeCapture.barcodes.isEmpty) return;
     final barcode = barcodeCapture.barcodes.first;
     if (barcode.type == BarcodeType.url) {
       Navigator.pop<String>(context, barcode.rawValue);
@@ -43,19 +61,21 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
+    if (controller == null) return;
+
     switch (state) {
       case AppLifecycleState.detached:
       case AppLifecycleState.hidden:
       case AppLifecycleState.paused:
         return;
       case AppLifecycleState.resumed:
-        _subscription = controller.barcodes.listen(_handleBarcode);
-
-        unawaited(controller.start());
+        _subscription?.cancel();
+        _subscription = controller?.barcodes.listen(_handleBarcode);
+        controller?.start();
       case AppLifecycleState.inactive:
-        unawaited(_subscription?.cancel());
+        _subscription?.cancel();
         _subscription = null;
-        unawaited(controller.stop());
+        controller?.stop();
     }
   }
 
@@ -70,12 +90,22 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
       width: sideLength,
       height: sideLength,
     );
+
+    if (!_isInitialized || controller == null) {
+      return const Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Stack(
         children: [
           Center(
             child: MobileScanner(
-              controller: controller,
+              controller: controller!,
               scanWindow: scanWindow,
             ),
           ),
@@ -95,7 +125,7 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
             ),
             actions: [
               ValueListenableBuilder<MobileScannerState>(
-                valueListenable: controller,
+                valueListenable: controller!,
                 builder: (context, state, _) {
                   var icon = const Icon(Icons.flash_off);
                   var backgroundColor = Colors.black12;
@@ -124,7 +154,7 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
                           foregroundColor: Colors.white,
                           backgroundColor: backgroundColor,
                         ),
-                        onPressed: () => controller.toggleTorch(),
+                        onPressed: () => controller?.toggleTorch(),
                       ),
                     ),
                   );
@@ -155,11 +185,12 @@ class _ScanPageState extends State<ScanPage> with WidgetsBindingObserver {
   }
 
   @override
-  Future<void> dispose() async {
+  void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    unawaited(_subscription?.cancel());
+    _subscription?.cancel();
     _subscription = null;
-    await controller.dispose();
+    controller?.dispose();
+    controller = null;
     super.dispose();
   }
 }
@@ -175,18 +206,12 @@ class ScannerOverlay extends CustomPainter {
     final backgroundPath = Path()..addRect(Rect.largest);
 
     final cutoutPath = Path()
-      ..addRSuperellipse(
-        RSuperellipse.fromRectAndCorners(
-          scanWindow,
-          topLeft: Radius.circular(borderRadius),
-          topRight: Radius.circular(borderRadius),
-          bottomLeft: Radius.circular(borderRadius),
-          bottomRight: Radius.circular(borderRadius),
-        ),
+      ..addRRect(
+        RRect.fromRectAndRadius(scanWindow, Radius.circular(borderRadius)),
       );
 
     final backgroundPaint = Paint()
-      ..color = Colors.black.opacity50
+      ..color = Colors.black.withOpacity(0.5)
       ..style = PaintingStyle.fill
       ..blendMode = BlendMode.dstOut;
 
@@ -201,16 +226,13 @@ class ScannerOverlay extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4.0;
 
-    final border = RSuperellipse.fromRectAndCorners(
+    final border = RRect.fromRectAndRadius(
       scanWindow,
-      topLeft: Radius.circular(borderRadius),
-      topRight: Radius.circular(borderRadius),
-      bottomLeft: Radius.circular(borderRadius),
-      bottomRight: Radius.circular(borderRadius),
+      Radius.circular(borderRadius),
     );
 
     canvas.drawPath(backgroundWithCutout, backgroundPaint);
-    canvas.drawRSuperellipse(border, borderPaint);
+    canvas.drawRRect(border, borderPaint);
   }
 
   @override
