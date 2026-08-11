@@ -2,13 +2,14 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:animations/animations.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:fl_clash/common/theme.dart';
-import 'package:fl_clash/glass/glass.dart';
 import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/widgets/list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_color_utilities/palettes/core_palette.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -33,6 +34,8 @@ class GlobalState {
   late ProviderContainer container;
   bool needInitStatus = true;
 
+  // ignore: deprecated_member_use
+  CorePalette? corePalette;
   String? lastConfigMd5;
   VpnState? lastVpnState;
   bool isAttach = false;
@@ -47,9 +50,17 @@ class GlobalState {
   Future<ProviderContainer> init(int version) async {
     coreSHA256 = const String.fromEnvironment('CORE_SHA256');
     isPre = const String.fromEnvironment('APP_ENV') != 'stable';
-    // Initialize with default accent color (Glass theme will handle dynamic colors)
-    accentColor = const Color(defaultPrimaryColor);
+    await _initDynamicColor();
     return _initData(version);
+  }
+
+  Future<void> _initDynamicColor() async {
+    try {
+      corePalette = await DynamicColorPlugin.getCorePalette();
+      accentColor =
+          await DynamicColorPlugin.getAccentColor() ??
+          const Color(defaultPrimaryColor);
+    } catch (_) {}
   }
 
   String get ua => container
