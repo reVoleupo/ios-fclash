@@ -37,21 +37,45 @@ jobs:
       - name: Add iOS platform
         run: flutter create --platforms ios --org com.flclash --project-name fl_clash .
 
-      - name: Set minimum iOS version to 26.0 (for Liquid Glass)
+      - name: Configure iOS project (version + disable code signing)
         run: |
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 13.0/IPHONEOS_DEPLOYMENT_TARGET = 26.0/g' ios/Runner.xcodeproj/project.pbxproj
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 14.0/IPHONEOS_DEPLOYMENT_TARGET = 26.0/g' ios/Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/DEVELOPMENT_TEAM = .*/DEVELOPMENT_TEAM = "";/g' ios/Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/CODE_SIGN_IDENTITY = .*/CODE_SIGN_IDENTITY = "";/g' ios/Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/CODE_SIGNING_REQUIRED = .*/CODE_SIGNING_REQUIRED = NO;/g' ios/Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/CODE_SIGNING_ALLOWED = .*/CODE_SIGNING_ALLOWED = NO;/g' ios/Runner.xcodeproj/project.pbxproj
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build iOS (unsigned)
-        run: flutter build ios --release --no-codesign
+      - name: Build iOS (config only)
+        run: flutter build ios --release --no-codesign --config-only
+
+      - name: Build Xcode project (unsigned)
+        run: |
+          cd ios
+          pod install
+          xcodebuild -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath ../build/ios/derivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            DEVELOPMENT_TEAM="" \
+            CODE_SIGN_IDENTITY="" \
+            | tail -30
 
       - name: Create IPA
         run: |
           mkdir -p Payload
-          cp -r build/ios/iphoneos/Runner.app Payload/
+          APP_PATH=$(find build/ios/derivedData -name "Runner.app" -path "*/Release-iphoneos/*" | head -1)
+          if [ -z "$APP_PATH" ]; then
+            APP_PATH="build/ios/iphoneos/Runner.app"
+          fi
+          echo "Using app at: $APP_PATH"
+          cp -r "$APP_PATH" Payload/
           zip -r FlClash-iOS-unsigned.ipa Payload
 
       - name: Upload artifact
