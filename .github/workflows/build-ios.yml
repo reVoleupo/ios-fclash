@@ -1,67 +1,27 @@
 name: Build iOS (Unsigned)
-
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
-
-env:
-  FLUTTER_VERSION: '3.44.4'
-
 jobs:
   build-ios:
     runs-on: macos-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
           go-version: '1.26.4'
-          cache-dependency-path: core/go.sum
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
-          channel: master
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
-
-      - name: Setup Xcode
-        run: |
-          sudo xcode-select -s /Applications/Xcode_26.3.app || sudo xcode-select -s /Applications/Xcode_26.2.app || true
-          xcodebuild -version
-
-      - name: Get Flutter Dependency
-        run: |
-          flutter --version
-          flutter pub get
-
-      - name: Setup and Build
-        run: |
-          dart setup.dart ios --env stable || dart setup.dart ios
-
-      - name: Create IPA (unsigned)
-        run: |
+          channel: stable
+          flutter-version: '3.44.4'
+      - run: flutter pub get
+      - run: flutter build ios --release --no-codesign
+      - run: |
           mkdir -p Payload
-          if [ -d "dist" ]; then
-            cp -r dist/*.app Payload/ 2>/dev/null || cp -r dist/* Payload/
-          fi
-          zip -r FlClash-iOS-unsigned.ipa Payload || echo "IPA creation failed"
-
-      - name: Upload IPA
-        uses: actions/upload-artifact@v4
+          cp -r build/ios/iphoneos/Runner.app Payload/
+          zip -r FlClash-iOS-unsigned.ipa Payload
+      - uses: actions/upload-artifact@v4
         with:
           name: FlClash-iOS-unsigned
           path: FlClash-iOS-unsigned.ipa
-          if-no-files-found: warn
-
-      - name: Upload dist
-        uses: actions/upload-artifact@v4
-        with:
-          name: FlClash-iOS-dist
-          path: dist/
-          if-no-files-found: warn
