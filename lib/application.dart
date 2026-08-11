@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/core/core.dart';
-import 'package:fl_clash/glass/glass.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/manager/hotkey_manager.dart';
 import 'package:fl_clash/manager/manager.dart';
@@ -139,23 +138,6 @@ class ApplicationState extends ConsumerState<Application> {
           appSettingProvider.select((state) => state.locale),
         );
         final themeProps = ref.watch(themeSettingProvider);
-
-        // Get color schemes for light and dark themes
-        final lightColorScheme = _getAppColorScheme(
-          brightness: Brightness.light,
-          primaryColor: themeProps.primaryColor,
-        );
-        final darkColorScheme = _getAppColorScheme(
-          brightness: Brightness.dark,
-          primaryColor: themeProps.primaryColor,
-        ).toPureBlack(themeProps.pureBlack);
-
-        // Create Glass theme data from Material color scheme
-        final brightness = MediaQuery.platformBrightnessOf(context);
-        final currentColorScheme =
-            brightness == Brightness.dark ? darkColorScheme : lightColorScheme;
-        final glassTheme = GlassThemeData.fromColorScheme(currentColorScheme);
-
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           navigatorKey: globalState.navigatorKey,
@@ -166,14 +148,10 @@ class ApplicationState extends ConsumerState<Application> {
             GlobalWidgetsLocalizations.delegate,
           ],
           builder: (_, child) {
-            return GlassThemeProvider(
-              data: glassTheme,
-              child: AppEnvManager(
-                child: _buildApp(
-                  child: _buildPlatformState(
-                    child:
-                        _buildState(child: _buildPlatformApp(child: child!)),
-                  ),
+            return AppEnvManager(
+              child: _buildApp(
+                child: _buildPlatformState(
+                  child: _buildState(child: _buildPlatformApp(child: child!)),
                 ),
               ),
             );
@@ -186,12 +164,18 @@ class ApplicationState extends ConsumerState<Application> {
           theme: ThemeData(
             useMaterial3: true,
             pageTransitionsTheme: _pageTransitionsTheme,
-            colorScheme: lightColorScheme,
+            colorScheme: _getAppColorScheme(
+              brightness: Brightness.light,
+              primaryColor: themeProps.primaryColor,
+            ),
           ),
           darkTheme: ThemeData(
             useMaterial3: true,
             pageTransitionsTheme: _pageTransitionsTheme,
-            colorScheme: darkColorScheme,
+            colorScheme: _getAppColorScheme(
+              brightness: Brightness.dark,
+              primaryColor: themeProps.primaryColor,
+            ).toPureBlack(themeProps.pureBlack),
           ),
           home: child!,
         );
