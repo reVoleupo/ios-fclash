@@ -1,27 +1,43 @@
 name: Build iOS (Unsigned)
+
 on:
   workflow_dispatch:
+
 jobs:
   build-ios:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - uses: actions/setup-go@v5
+      - name: Clone FlClash with submodules
+        run: |
+          git clone --depth 1 --recursive https://github.com/chen08209/FlClash.git flclash
+          cd flclash
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
         with:
           go-version: '1.26.4'
-      - uses: subosito/flutter-action@v2
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: stable
           flutter-version: '3.44.4'
-      - run: flutter pub get
-      - run: flutter build ios --release --no-codesign
-      - run: |
+
+      - name: Build iOS
+        working-directory: flclash
+        run: |
+          flutter pub get
+          dart setup.dart ios
+
+      - name: Create IPA
+        working-directory: flclash
+        run: |
           mkdir -p Payload
-          cp -r build/ios/iphoneos/Runner.app Payload/
-          zip -r FlClash-iOS-unsigned.ipa Payload
-      - uses: actions/upload-artifact@v4
+          cp -r dist/*.app Payload/ 2>/dev/null || cp -r build/ios/iphoneos/Runner.app Payload/
+          zip -r ../FlClash-iOS-unsigned.ipa Payload
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
           name: FlClash-iOS-unsigned
           path: FlClash-iOS-unsigned.ipa
