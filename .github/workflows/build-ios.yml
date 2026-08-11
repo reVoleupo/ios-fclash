@@ -30,7 +30,7 @@ jobs:
 
       - name: Add iOS platform
         working-directory: /tmp/flclash
-        run: flutter create --platforms ios --ios-org-name com.flclash --project-name fl_clash .
+        run: flutter create --platforms ios .
 
       - name: Set minimum iOS version to 26.0 (for Liquid Glass)
         working-directory: /tmp/flclash
