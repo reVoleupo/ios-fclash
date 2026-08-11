@@ -27,9 +27,15 @@ jobs:
         run: |
           sudo xcode-select -s /Applications/Xcode_16.app || sudo xcode-select -s /Applications/Xcode_15.4.app || true
 
-      - name: Add iOS platform
+      - name: Add iOS platform (min iOS 14.0)
         working-directory: /tmp/flclash
-        run: flutter create --platforms ios .
+        run: flutter create --platforms ios --ios-org-name com.flclash --project-name fl_clash .
+
+      - name: Set minimum iOS version to 14.0
+        working-directory: /tmp/flclash
+        run: |
+          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 13.0/IPHONEOS_DEPLOYMENT_TARGET = 14.0/g' ios/Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/MinimumOSVersion = 13.0/MinimumOSVersion = 14.0/g' ios/Runner/Info.plist 2>/dev/null || true
 
       - name: Install dependencies
         working-directory: /tmp/flclash
@@ -50,3 +56,248 @@ jobs:
         with:
           name: FlClash-iOS-unsigned
           path: FlClash-iOS-unsigned.ipa
+name: Build iOS (Unsigned)
+name: Build iOS (Unsigned)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-lname: Build iOS (Unsigned)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Clone FlClash source
+        run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:name: Build iOS (Unsigned)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Clone FlClash source
+        run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          git clone --depth 1 --recursive https://github.com/chen08209/FlClash.git /tmp/flclash
+name: Build iOS (Unsigned)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Clone FlClash source
+        run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          git clone --depth 1 --recursive https://github.com/chen08209/FlClash.git /tmp/flclash
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'name: Build iOS (Unsigned)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Clone FlClash source
+        run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          git clone --depth 1 --recursive https://github.com/chen08209/FlClash.git /tmp/flclash
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.4'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@vname: Build iOS (Unsigned)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Clone FlClash source
+        run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          git clone --depth 1 --recursive https://github.com/chen08209/FlClash.git /tmp/flclash
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.4'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.44.name: Build iOS (Unsigned)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Clone FlClash source
+        run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          git clone --depth 1 --recursive https://github.com/chen08209/FlClash.git /tmp/flclash
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.4'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.44.4'
+
+      - name: Setup Xcode (latest beta for iOS 26name: Build iOS (Unsigned)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Clone FlClash source
+        run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          git clone --depth 1 --recursive https://github.com/chen08209/FlClash.git /tmp/flclash
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.4'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.44.4'
+
+      - name: Setup Xcode (latest beta for iOS 26)
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.3.app || sudo xcode-select -s /Applicationsname: Build iOS (Unsigned)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Clone FlClash source
+        run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          git clone --depth 1 --recursive https://github.com/chen08209/FlClash.git /tmp/flclash
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.4'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.44.4'
+
+      - name: Setup Xcode (latest beta for iOS 26)
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.3.app || sudo xcode-select -s /Applications/Xcode_26.2.app || sudo xcode-select -s /Applications/Xcode_26.1.app || sudo xcode-select -s /Applications/Xcode_26name: Build iOS (Unsigned)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Clone FlClash source
+        run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          git clone --depth 1 --recursive https://github.com/chen08209/FlClash.git /tmp/flclash
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.4'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.44.4'
+
+      - name: Setup Xcode (latest beta for iOS 26)
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.3.app || sudo xcode-select -s /Applications/Xcode_26.2.app || sudo xcode-select -s /Applications/Xcode_26.1.app || sudo xcode-select -s /Applications/Xcode_26.app || sudo xcode-select -s /Applications/Xcode_16.app || true
+          xcodebuild -version
+
+      - name: Add iOS platform
+        working-directory: /tmp/flclash
+        run: flutter create --platforms ios --ios-org-name com.flclash --project-name fl_clash .
+
+      - name: Set minimum iOS version to 16.0 (compatible with Liquid Glass)
+        workingname: Build iOS (Unsigned)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Clone FlClash source
+        run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          git clone --depth 1 --recursive https://github.com/chen08209/FlClash.git /tmp/flclash
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.4'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.44.4'
+
+      - name: Setup Xcode (latest beta for iOS 26)
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.3.app || sudo xcode-select -s /Applications/Xcode_26.2.app || sudo xcode-select -s /Applications/Xcode_26.1.app || sudo xcode-select -s /Applications/Xcode_26.app || sudo xcode-select -s /Applications/Xcode_16.app || true
+          xcodebuild -version
+
+      - name: Add iOS platform
+        working-directory: /tmp/flclash
+        run: flutter create --platforms ios --ios-org-name com.flclash --project-name fl_clash .
+
+      - name: Set minimum iOS version to 16.0 (compatible with Liquid Glass)
+        working-directory: /tmp/flclash
+        run: |
+          # Set deployment target to 16.0 for broad compatibility
+          #
