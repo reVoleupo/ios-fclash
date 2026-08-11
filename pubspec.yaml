@@ -19,7 +19,7 @@ dependencies:
       url: https://github.com/chen08209/window_manager
       ref: main
       path: packages/window_manager
-  dynamic_color: ^1.8.1
+  # Removed: dynamic_color (Material You dependency)
   proxy:
     path: plugins/proxy
   window_ext:
@@ -64,7 +64,7 @@ dependencies:
   flutter_riverpod: ^3.3.1
   riverpod_annotation: ^4.0.2
   riverpod: ^3.2.1
-  material_color_utilities: ^0.13.0
+  # Removed: material_color_utilities (Material You dependency)
   flutter_js: ^0.8.7
   flutter_svg: ^2.1.0
   flutter_cache_manager: ^3.4.1
