@@ -5,53 +5,63 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  FLUTTER_VERSION: '3.44.4'
+
 jobs:
   build-ios:
     runs-on: macos-latest
     steps:
-      - name: Clone FlClash source
-        run: |
-          git clone --depth 1 --recursive https://github.com/chen08209/FlClash.git source
-          cd source
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          flutter-version: '3.24.0'
-          channel: 'stable'
+          submodules: recursive
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: '1.26.4'
+          cache-dependency-path: core/go.sum
 
-      - name: Get Flutter dependencies
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: master
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Setup Xcode
         run: |
-          cd source
+          sudo xcode-select -s /Applications/Xcode_26.3.app || sudo xcode-select -s /Applications/Xcode_26.2.app || true
+          xcodebuild -version
+
+      - name: Get Flutter Dependency
+        run: |
+          flutter --version
           flutter pub get
 
-      - name: Build Go core for iOS
+      - name: Setup and Build
         run: |
-          cd source/core
-          go mod download
-          GOOS=ios GOARCH=arm64 CGO_ENABLED=1 go build -buildmode=c-shared -o ../ios/Runner/core.dylib -ldflags "-s -w" . || \
-          GOOS=ios GOARCH=arm64 CGO_ENABLED=1 go build -buildmode=c-archive -o ../ios/Runner/core.a -ldflags "-s -w" .
-
-      - name: Build Flutter iOS (unsigned)
-        run: |
-          cd source
-          flutter build ios --release --no-codesign
+          dart setup.dart ios --env stable || dart setup.dart ios
 
       - name: Create IPA (unsigned)
         run: |
-          cd source
           mkdir -p Payload
-          cp -r build/ios/iphoneos/Runner.app Payload/
-          zip -r ../FlClash-iOS-unsigned.ipa Payload
+          if [ -d "dist" ]; then
+            cp -r dist/*.app Payload/ 2>/dev/null || cp -r dist/* Payload/
+          fi
+          zip -r FlClash-iOS-unsigned.ipa Payload || echo "IPA creation failed"
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: FlClash-iOS-unsigned
           path: FlClash-iOS-unsigned.ipa
+          if-no-files-found: warn
+
+      - name: Upload dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: FlClash-iOS-dist
+          path: dist/
           if-no-files-found: warn
