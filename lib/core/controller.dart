@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/core/core.dart';
 import 'package:fl_clash/core/interface.dart';
+import 'package:fl_clash/core/ios_stub.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
@@ -18,8 +19,11 @@ class CoreController {
   CoreController._internal() {
     if (system.isAndroid) {
       _interface = coreLib!;
-    } else {
+    } else if (system.isDesktop) {
       _interface = coreService!;
+    } else {
+      // iOS and other mobile platforms: use stub to prevent crash
+      _interface = iosCoreStub;
     }
   }
 
